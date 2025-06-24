@@ -36,9 +36,9 @@ class GildedRoseTest {
     }
 
     @Test
-    public void updateQuality_quality_eq_49_then_quality_does_not_increase_above_50() {
+    public void updateQuality_quality_eq_50_then_quality_does_not_increase_above_50() {
         // Arrange
-        Item[] items = new Item[]{new Item("Aged Brie", 5, 49)};
+        Item[] items = new Item[]{new Item(ItemConstants.AGED_BRIE, 5, 50)};
         GildedRose app = new GildedRose(items);
 
         // Act
@@ -66,7 +66,7 @@ class GildedRoseTest {
     @Test
     public void updateQuality_when_item_is_aged_brie_then_quality_increases() {
         // Arrange
-        Item[] items = new Item[]{new Item("Aged Brie", 2, 0)};
+        Item[] items = new Item[]{new Item(ItemConstants.AGED_BRIE, 2, 0)};
         GildedRose app = new GildedRose(items);
 
         // Act
@@ -80,7 +80,7 @@ class GildedRoseTest {
     @Test
     public void updateQuality_when_item_is_sulfuras_then_quality_does_not_decrease() {
         // Arrange
-        Item[] items = new Item[]{new Item("Sulfuras, Hand of Ragnaros", 0, 80)};
+        Item[] items = new Item[]{new Item(ItemConstants.SULFURAS, 0, ItemConstants.LEGENDARY_QUALITY)};
         GildedRose app = new GildedRose(items);
 
         // Act
@@ -101,7 +101,7 @@ class GildedRoseTest {
     })
     public void updateQuality_when_quality_is_backstage_passes_and_then_quality_increases(int sellIn, int qualityBeforeUpdate, int qualityAfterUpdate) {
         // Arrange
-        Item[] items = new Item[]{new Item("Backstage passes to a TAFKAL80ETC concert", sellIn, qualityBeforeUpdate)};
+        Item[] items = new Item[]{new Item(ItemConstants.BACKSTAGE_PASS, sellIn, qualityBeforeUpdate)};
         GildedRose app = new GildedRose(items);
 
         // Act
