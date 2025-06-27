@@ -6,9 +6,9 @@ public class VendorItemQualityUpdateStrategyFactory {
     private final DynamicQualityUpdateStrategy dynamic;
     private final LinearQualityUpdateStrategy linear;
 
-    public VendorItemQualityUpdateStrategyFactory(DynamicQualityUpdateStrategy dynamic, LinearQualityUpdateStrategy linear) {
-        this.dynamic = dynamic;
-        this.linear = linear;
+    public VendorItemQualityUpdateStrategyFactory() {
+        this.dynamic = new DynamicQualityUpdateStrategy();
+        this.linear = new LinearQualityUpdateStrategy();
     }
 
     public VendorItemQualityUpdateStrategy<LinearQualityUpdateStrategyParameters> GetLinearStrategy()

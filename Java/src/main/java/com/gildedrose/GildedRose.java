@@ -2,14 +2,11 @@ package com.gildedrose;
 
 import com.gildedrose.domain.vendor.inventory.VendorInventory;
 import com.gildedrose.domain.vendor.inventory.quality.policies.VendorInventoryDailyQualityUpdatePolicy;
-import com.gildedrose.domain.vendor.inventory.quality.policies.builders.VendorInventoryDailyQualityUpdatePolicyBuilder;
 import com.gildedrose.domain.vendor.item.VendorItem;
 import com.gildedrose.domain.vendor.item.VendorItemKind;
 import com.gildedrose.domain.vendor.item.VendorItemRarity;
 import com.gildedrose.domain.vendor.item.quality.policies.builders.VendorItemQualityUpdatePolicyBuilder;
 import com.gildedrose.domain.vendor.item.quality.policies.factories.VendorItemQualityUpdateStrategyFactory;
-import com.gildedrose.domain.vendor.item.quality.policies.strategies.DynamicQualityUpdateStrategy;
-import com.gildedrose.domain.vendor.item.quality.policies.strategies.LinearQualityUpdateStrategy;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -34,12 +31,9 @@ class GildedRose {
             .withRateBelowExpirationDays(2, 10)
             .withRateBelowExpirationDays(3, 5)
             .withQualityAfterExpiration(0);
-        VendorItemQualityUpdateStrategyFactory factory = new VendorItemQualityUpdateStrategyFactory(
-            new DynamicQualityUpdateStrategy(),
-            new LinearQualityUpdateStrategy()
-        );
+        VendorItemQualityUpdateStrategyFactory factory = new VendorItemQualityUpdateStrategyFactory();
 
-        qualityUpdatePolicy = new VendorInventoryDailyQualityUpdatePolicyBuilder(factory)
+        qualityUpdatePolicy = new VendorInventoryDailyQualityUpdatePolicy.Builder(factory)
             .withDefaultPolicy(defaultPolicy)
             .withPolicy(VendorItemRarity.Legendary, VendorItemQualityUpdatePolicyBuilder.noUpdate())
             .withPolicy(VendorItemKind.AgedBrie, briePolicy)

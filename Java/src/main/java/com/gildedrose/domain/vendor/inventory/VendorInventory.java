@@ -2,7 +2,6 @@ package com.gildedrose.domain.vendor.inventory;
 
 import com.gildedrose.domain.vendor.inventory.quality.policies.VendorInventoryDailyQualityUpdatePolicy;
 import com.gildedrose.domain.vendor.item.VendorItem;
-import com.gildedrose.domain.vendor.item.VendorItemRarity;
 
 import java.util.*;
 
@@ -18,10 +17,6 @@ public class VendorInventory
     }
     public void updateDaily(VendorInventoryDailyQualityUpdatePolicy updatePolicy)
     {
-        items.stream().filter(i -> i.getRarity() != VendorItemRarity.Legendary)
-            .forEach(item -> {
-            updatePolicy.forItem(item)
-                .ifPresent(item::updateDaily);
-        });
+        items.forEach(updatePolicy::apply);
     }
 }
