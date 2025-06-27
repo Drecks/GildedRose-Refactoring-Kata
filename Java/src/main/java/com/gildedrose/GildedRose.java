@@ -1,58 +1,83 @@
 package com.gildedrose;
 
-class GildedRose {
+import com.gildedrose.domain.vendor.inventory.VendorInventory;
+import com.gildedrose.domain.vendor.inventory.quality.policies.VendorInventoryDailyQualityUpdatePolicy;
+import com.gildedrose.domain.vendor.inventory.quality.policies.builders.VendorInventoryDailyQualityUpdatePolicyBuilder;
+import com.gildedrose.domain.vendor.item.VendorItem;
+import com.gildedrose.domain.vendor.item.VendorItemKind;
+import com.gildedrose.domain.vendor.item.VendorItemRarity;
+import com.gildedrose.domain.vendor.item.quality.policies.builders.VendorItemQualityUpdatePolicyBuilder;
+import com.gildedrose.domain.vendor.item.quality.policies.factories.VendorItemQualityUpdateStrategyFactory;
+import com.gildedrose.domain.vendor.item.quality.policies.strategies.DynamicQualityUpdateStrategy;
+import com.gildedrose.domain.vendor.item.quality.policies.strategies.LinearQualityUpdateStrategy;
 
-    Item[] items;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+class GildedRose {
+    VendorInventory inventory;
+    VendorInventoryDailyQualityUpdatePolicy qualityUpdatePolicy;
 
     public GildedRose(Item[] items) {
-        this.items = items;
+        inventory = new VendorInventory(Arrays.stream(items).map(GildedRose::mapToVendorItem).collect(Collectors.toList()));
+        VendorItemQualityUpdatePolicyBuilder defaultPolicy = VendorItemQualityUpdatePolicyBuilder
+            .linearPolicy()
+            .withDailyChangeRate(-1)
+            .withDailyChangeRateAfterExpiration(-2);
+        VendorItemQualityUpdatePolicyBuilder briePolicy = VendorItemQualityUpdatePolicyBuilder
+            .linearPolicy()
+            .withDailyChangeRate(1)
+            .withDailyChangeRateAfterExpiration(2);
+        VendorItemQualityUpdatePolicyBuilder backstagePolicy = VendorItemQualityUpdatePolicyBuilder
+            .dynamicPolicy()
+            .withInitialDailyChangeRate(1)
+            .withRateBelowExpirationDays(2, 10)
+            .withRateBelowExpirationDays(3, 5)
+            .withQualityAfterExpiration(0);
+        VendorItemQualityUpdateStrategyFactory factory = new VendorItemQualityUpdateStrategyFactory(
+            new DynamicQualityUpdateStrategy(),
+            new LinearQualityUpdateStrategy()
+        );
+
+        qualityUpdatePolicy = new VendorInventoryDailyQualityUpdatePolicyBuilder(factory)
+            .withDefaultPolicy(defaultPolicy)
+            .withPolicy(VendorItemRarity.Legendary, VendorItemQualityUpdatePolicyBuilder.noUpdate())
+            .withPolicy(VendorItemKind.AgedBrie, briePolicy)
+            .withPolicy(VendorItemKind.BackstagePass, backstagePolicy)
+            .build();
     }
 
     public void updateQuality() {
-        for (int i = 0; i < items.length; i++) {
-            if(items[i].name.equals(ItemConstants.SULFURAS))
-            {
-               continue;
-            }
-            boolean itemQualityIncreases = items[i].name.equals(ItemConstants.AGED_BRIE) || items[i].name.equals(ItemConstants.BACKSTAGE_PASS);
-            if(itemQualityIncreases)
-            {
-                int qualityIncrease = 1;
+        inventory.updateDaily(qualityUpdatePolicy);
+    }
 
-                if(items[i].name.equals(ItemConstants.BACKSTAGE_PASS))
-                {
-                   if(items[i].sellIn < 11)
-                   {
-                       qualityIncrease = 2;
-                   }
-                   if (items[i].sellIn < 6) {
-                       qualityIncrease = 3;
-                   }
-                }
-                items[i].quality = Math.min(ItemConstants.MAX_NORMAL_QUALITY, items[i].quality + qualityIncrease);
-            }
-            else
-            {
-                items[i].quality = Math.max(ItemConstants.MIN_NORMAL_QUALITY, items[i].quality - 1);
-            }
+    private static VendorItem mapToVendorItem(Item item) {
+        VendorItemRarity rarity = mapItemToRarity(item);
+        VendorItemKind kind = mapItemToKind(item);
+        if (rarity == VendorItemRarity.Legendary) {
+            return new VendorItem(item, rarity, kind, ItemConstants.LEGENDARY_QUALITY, ItemConstants.LEGENDARY_QUALITY);
+        } else {
+            return new VendorItem(item, rarity, kind, ItemConstants.MIN_NORMAL_QUALITY, ItemConstants.MAX_NORMAL_QUALITY);
+        }
+    }
 
-            items[i].sellIn = items[i].sellIn - 1;
+    private static VendorItemRarity mapItemToRarity(Item item) {
+        if (item.name.equalsIgnoreCase(ItemConstants.SULFURAS)) {
+            return VendorItemRarity.Legendary;
+        }
+        return VendorItemRarity.Normal;
+    }
 
-            if(items[i].sellIn < 0)
-            {
-                if(items[i].name.equals(ItemConstants.BACKSTAGE_PASS))
-                {
-                    items[i].quality = ItemConstants.MIN_NORMAL_QUALITY;
-                }
-                else if (items[i].name.equals(ItemConstants.AGED_BRIE))
-                {
-                    items[i].quality = Math.min(ItemConstants.MAX_NORMAL_QUALITY, items[i].quality + 1);
-                }
-                else
-                {
-                    items[i].quality = Math.max(ItemConstants.MIN_NORMAL_QUALITY, items[i].quality - 1);
-                }
-            }
+    private static VendorItemKind mapItemToKind(Item item) {
+        switch (item.name) {
+            case ItemConstants.SULFURAS:
+                return VendorItemKind.Sulfuras;
+            case ItemConstants.AGED_BRIE:
+                return VendorItemKind.AgedBrie;
+            case ItemConstants.BACKSTAGE_PASS:
+                return VendorItemKind.BackstagePass;
+            default:
+                return VendorItemKind.Default;
         }
     }
 }
