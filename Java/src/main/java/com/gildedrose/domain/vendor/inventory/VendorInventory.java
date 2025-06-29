@@ -13,7 +13,10 @@ import java.util.*;
  * cannot be modified. Each day, the quality of each item may degrade, improve, or remain the same,
  * depending on the provided {@link VendorInventoryQualityUpdatePolicy}.
  * </p>
- *
+ * <p>
+ * This class assumes it is always constructed with valid non-null items.
+ * Assertions are used to enforce invariants during development and testing.
+ * </p>
  * <p>
  * Usage example:
  * </p>
