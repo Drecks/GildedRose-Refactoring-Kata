@@ -49,22 +49,4 @@ public final class DynamicQualityUpdateRateTimeline {
             .map(Map.Entry::getValue)
             .findFirst();
     }
-
-
-    private static class Step {
-        private final int belowExpirationDays;
-        private final int rate;
-        public Step (int belowExpirationDays, int rate) {
-            this.belowExpirationDays = belowExpirationDays;
-            this.rate = rate;
-        }
-
-        int getBelowExpirationDays() {
-            return belowExpirationDays;
-        }
-        int getRate()
-        {
-            return rate;
-        }
-    }
 }

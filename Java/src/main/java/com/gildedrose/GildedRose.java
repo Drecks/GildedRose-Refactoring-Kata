@@ -33,7 +33,7 @@ class GildedRose {
             .withQualityAfterExpiration(0);
         VendorItemQualityUpdateStrategyFactory factory = new VendorItemQualityUpdateStrategyFactory();
 
-        qualityUpdatePolicy = new VendorInventoryQualityUpdatePolicy.PolicyBuilder(factory)
+        qualityUpdatePolicy = VendorInventoryQualityUpdatePolicy.builder(factory)
             .withDefaultPolicy(defaultPolicy)
             .withPolicy(VendorItemRarity.Legendary, VendorItemQualityUpdatePolicyBuilder.noUpdate())
             .withPolicy(VendorItemKind.AgedFood, agedFoodPolicy)

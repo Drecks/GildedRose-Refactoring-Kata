@@ -38,5 +38,5 @@ public interface VendorItemQualityUpdateStrategy<TParameters> {
      * @param item   the item to update; must not be {@code null}
      * @param params the parameters controlling the update logic; must not be {@code null}
      */
-    public void execute(VendorItem item, TParameters params);
+    void execute(VendorItem item, TParameters params);
 }
