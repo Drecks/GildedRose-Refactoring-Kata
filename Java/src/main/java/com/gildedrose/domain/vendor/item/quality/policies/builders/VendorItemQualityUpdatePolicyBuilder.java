@@ -1,7 +1,7 @@
 package com.gildedrose.domain.vendor.item.quality.policies.builders;
 
-import com.gildedrose.domain.vendor.item.quality.policies.VendorItemDailyQualityUpdatePolicy;
-import com.gildedrose.domain.vendor.item.quality.policies.VendorItemNoQualityUpdatePolicy;
+import com.gildedrose.domain.vendor.item.quality.policies.StrategyBasedVendorItemQualityUpdatePolicy;
+import com.gildedrose.domain.vendor.item.quality.policies.NoVendorItemQualityUpdatePolicy;
 import com.gildedrose.domain.vendor.item.quality.policies.VendorItemQualityUpdatePolicy;
 import com.gildedrose.domain.vendor.item.quality.policies.factories.VendorItemQualityUpdateStrategyFactory;
 import com.gildedrose.domain.vendor.item.quality.policies.strategies.DynamicQualityUpdateRateTimeline;
@@ -25,7 +25,7 @@ public interface VendorItemQualityUpdatePolicyBuilder {
 
     static VendorItemQualityUpdatePolicyBuilder noUpdate()
     {
-        return factory -> new VendorItemNoQualityUpdatePolicy();
+        return factory -> NoVendorItemQualityUpdatePolicy.INSTANCE;
     }
 
     class Linear implements VendorItemQualityUpdatePolicyBuilder {
@@ -43,7 +43,7 @@ public interface VendorItemQualityUpdatePolicyBuilder {
         {
             LinearQualityUpdateStrategyParameters parameters = new LinearQualityUpdateStrategyParameters(initialRate, expiredRate);
             VendorItemQualityUpdateStrategy<LinearQualityUpdateStrategyParameters> strategy = factory.GetLinearStrategy();
-            return new VendorItemDailyQualityUpdatePolicy<>(strategy, parameters);
+            return new StrategyBasedVendorItemQualityUpdatePolicy<>(strategy, parameters);
         }
     }
 
@@ -71,7 +71,7 @@ public interface VendorItemQualityUpdatePolicyBuilder {
         public VendorItemQualityUpdatePolicy build(VendorItemQualityUpdateStrategyFactory factory) {
             DynamicQualityUpdateStrategyParameters parameters = new DynamicQualityUpdateStrategyParameters(initialRate, steps, qualityAfterExpiration);
             VendorItemQualityUpdateStrategy<DynamicQualityUpdateStrategyParameters> strategy = factory.GetDynamicStrategy();
-            return new VendorItemDailyQualityUpdatePolicy<>(strategy, parameters);
+            return new StrategyBasedVendorItemQualityUpdatePolicy<>(strategy, parameters);
         }
     }
 }

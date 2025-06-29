@@ -34,13 +34,13 @@ public class VendorItem {
      * @param rarity      the rarity of the item (e.g., Common, Rare, Legendary); must not be null
      * @param kind        the kind/category of the item (e.g., Weapon, Potion); must not be null
      * @param minQuality  the minimum allowed quality value (inclusive)
-     * @param maxQuality  the maximum allowed quality value (inclusive); must be greater than minQuality
+     * @param maxQuality  the maximum allowed quality value (inclusive); must be greater or equal to minQuality
      */
     public VendorItem(Item item, VendorItemRarity rarity, VendorItemKind kind, int minQuality, int maxQuality) {
         assert item != null;
         assert rarity != null;
         assert kind != null;
-        assert minQuality < maxQuality;
+        assert minQuality <= maxQuality;
         this.item = item;
         this.rarity = rarity;
         this.kind = kind;

@@ -21,11 +21,11 @@ class GildedRose {
             .linearPolicy()
             .withDailyChangeRate(-1)
             .withDailyChangeRateAfterExpiration(-2);
-        VendorItemQualityUpdatePolicyBuilder briePolicy = VendorItemQualityUpdatePolicyBuilder
+        VendorItemQualityUpdatePolicyBuilder agedFoodPolicy = VendorItemQualityUpdatePolicyBuilder
             .linearPolicy()
             .withDailyChangeRate(1)
             .withDailyChangeRateAfterExpiration(2);
-        VendorItemQualityUpdatePolicyBuilder backstagePolicy = VendorItemQualityUpdatePolicyBuilder
+        VendorItemQualityUpdatePolicyBuilder eventPassPolicy = VendorItemQualityUpdatePolicyBuilder
             .dynamicPolicy()
             .withInitialDailyChangeRate(1)
             .withRateBelowExpirationDays(2, 10)
@@ -36,8 +36,8 @@ class GildedRose {
         qualityUpdatePolicy = new VendorInventoryQualityUpdatePolicy.PolicyBuilder(factory)
             .withDefaultPolicy(defaultPolicy)
             .withPolicy(VendorItemRarity.Legendary, VendorItemQualityUpdatePolicyBuilder.noUpdate())
-            .withPolicy(VendorItemKind.AgedBrie, briePolicy)
-            .withPolicy(VendorItemKind.BackstagePass, backstagePolicy)
+            .withPolicy(VendorItemKind.AgedFood, agedFoodPolicy)
+            .withPolicy(VendorItemKind.EventPass, eventPassPolicy)
             .build();
     }
 
@@ -67,9 +67,9 @@ class GildedRose {
             case ItemConstants.SULFURAS:
                 return VendorItemKind.Sulfuras;
             case ItemConstants.AGED_BRIE:
-                return VendorItemKind.AgedBrie;
+                return VendorItemKind.AgedFood;
             case ItemConstants.BACKSTAGE_PASS:
-                return VendorItemKind.BackstagePass;
+                return VendorItemKind.EventPass;
             default:
                 return VendorItemKind.Default;
         }
