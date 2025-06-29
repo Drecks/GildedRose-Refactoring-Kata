@@ -1,7 +1,7 @@
 package com.gildedrose;
 
 import com.gildedrose.domain.vendor.inventory.VendorInventory;
-import com.gildedrose.domain.vendor.inventory.quality.policies.VendorInventoryDailyQualityUpdatePolicy;
+import com.gildedrose.domain.vendor.inventory.quality.policies.VendorInventoryQualityUpdatePolicy;
 import com.gildedrose.domain.vendor.item.VendorItem;
 import com.gildedrose.domain.vendor.item.VendorItemKind;
 import com.gildedrose.domain.vendor.item.VendorItemRarity;
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 class GildedRose {
     VendorInventory inventory;
-    VendorInventoryDailyQualityUpdatePolicy qualityUpdatePolicy;
+    VendorInventoryQualityUpdatePolicy qualityUpdatePolicy;
 
     public GildedRose(Item[] items) {
         inventory = new VendorInventory(Arrays.stream(items).map(GildedRose::mapToVendorItem).collect(Collectors.toList()));
@@ -33,7 +33,7 @@ class GildedRose {
             .withQualityAfterExpiration(0);
         VendorItemQualityUpdateStrategyFactory factory = new VendorItemQualityUpdateStrategyFactory();
 
-        qualityUpdatePolicy = new VendorInventoryDailyQualityUpdatePolicy.Builder(factory)
+        qualityUpdatePolicy = new VendorInventoryQualityUpdatePolicy.PolicyBuilder(factory)
             .withDefaultPolicy(defaultPolicy)
             .withPolicy(VendorItemRarity.Legendary, VendorItemQualityUpdatePolicyBuilder.noUpdate())
             .withPolicy(VendorItemKind.AgedBrie, briePolicy)
