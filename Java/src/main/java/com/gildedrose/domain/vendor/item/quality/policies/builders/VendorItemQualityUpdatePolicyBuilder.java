@@ -4,73 +4,147 @@ import com.gildedrose.domain.vendor.item.quality.policies.StrategyBasedVendorIte
 import com.gildedrose.domain.vendor.item.quality.policies.NoVendorItemQualityUpdatePolicy;
 import com.gildedrose.domain.vendor.item.quality.policies.VendorItemQualityUpdatePolicy;
 import com.gildedrose.domain.vendor.item.quality.policies.factories.VendorItemQualityUpdateStrategyFactory;
-import com.gildedrose.domain.vendor.item.quality.policies.strategies.DynamicQualityUpdateRateTimeline;
-import com.gildedrose.domain.vendor.item.quality.policies.strategies.DynamicQualityUpdateStrategyParameters;
-import com.gildedrose.domain.vendor.item.quality.policies.strategies.LinearQualityUpdateStrategyParameters;
-import com.gildedrose.domain.vendor.item.quality.policies.strategies.VendorItemQualityUpdateStrategy;
+import com.gildedrose.domain.vendor.item.quality.policies.strategies.*;
 
+/**
+ * Builder for constructing a {@link VendorItemQualityUpdatePolicy} using a provided strategy factory.
+ * Implementations encapsulate strategy-specific configuration such as rate schedules and expiration behavior.
+ */
 public interface VendorItemQualityUpdatePolicyBuilder {
 
+    /**
+     * Builds a concrete {@link VendorItemQualityUpdatePolicy} using the given strategy factory.
+     *
+     * @param factory the strategy factory to use
+     * @return the constructed policy instance
+     */
     VendorItemQualityUpdatePolicy build(VendorItemQualityUpdateStrategyFactory factory);
 
-    static Linear linearPolicy()
+    /**
+     * Returns a builder for creating a linear quality update policy.
+     *
+     * @return a new {@link LinearBuilder}
+     */
+    static LinearBuilder linearPolicy()
     {
-        return new Linear();
+        return new LinearBuilder();
     }
 
-    static Dynamic dynamicPolicy()
+
+    /**
+     * Returns a builder for creating a dynamic quality update policy.
+     *
+     * @return a new {@link DynamicBuilder}
+     */
+    static DynamicBuilder dynamicPolicy()
     {
-        return new Dynamic();
+        return new DynamicBuilder();
     }
 
+
+    /**
+     * Returns a builder that produces a no-op update policy.
+     *
+     * @return a builder that always returns the no-op policy
+     */
     static VendorItemQualityUpdatePolicyBuilder noUpdate()
     {
         return factory -> NoVendorItemQualityUpdatePolicy.INSTANCE;
     }
 
-    class Linear implements VendorItemQualityUpdatePolicyBuilder {
+    /**
+     * Builder for a dynamic quality update policy based on expiration timeline and post-expiration rules.
+     */
+    final class LinearBuilder implements VendorItemQualityUpdatePolicyBuilder {
         private int initialRate = 0;
         private int expiredRate = 0;
-        public Linear withDailyChangeRate(int dailyRate) {
+        /**
+         * Sets the daily quality change rate to be applied before the item expires.
+         *
+         * @param dailyRate the quality update rate for non-expired items (can be negative to degrade)
+         * @return this builder instance for method chaining
+         */
+        public LinearBuilder withDailyChangeRate(int dailyRate) {
             this.initialRate = dailyRate;
             return this;
         }
-        public Linear withDailyChangeRateAfterExpiration(int expiredRate) {
+
+        /**
+         * Sets the daily quality change rate to be applied after the item has expired.
+         *
+         * @param expiredRate the quality update rate for expired items (can be negative to degrade)
+         * @return this builder instance for method chaining
+         */
+        public LinearBuilder withDailyChangeRateAfterExpiration(int expiredRate) {
             this.expiredRate = expiredRate;
             return this;
         }
+
+        @Override
         public VendorItemQualityUpdatePolicy build(VendorItemQualityUpdateStrategyFactory factory)
         {
+            assert factory != null;
             LinearQualityUpdateStrategyParameters parameters = new LinearQualityUpdateStrategyParameters(initialRate, expiredRate);
-            VendorItemQualityUpdateStrategy<LinearQualityUpdateStrategyParameters> strategy = factory.GetLinearStrategy();
+            LinearQualityUpdateStrategy strategy = factory.GetLinearStrategy();
             return new StrategyBasedVendorItemQualityUpdatePolicy<>(strategy, parameters);
         }
     }
 
-    class Dynamic implements VendorItemQualityUpdatePolicyBuilder {
+    /**
+     * Builder for a dynamic quality update policy based on expiration timeline and post-expiration rules.
+     */
+    final class DynamicBuilder implements VendorItemQualityUpdatePolicyBuilder {
 
         private int initialRate = 0;
-        private final DynamicQualityUpdateRateTimeline steps = new DynamicQualityUpdateRateTimeline();
+        private final DynamicQualityUpdateRateTimeline timeline = new DynamicQualityUpdateRateTimeline();
         private Integer qualityAfterExpiration = null;
 
-        public Dynamic withInitialDailyChangeRate(int initialRate) {
+        /**
+         * Sets the initial default daily quality change rate to use when no timeline step matches.
+         *
+         * @param initialRate the fallback quality update rate
+         * @return this builder instance for method chaining
+         */
+        public DynamicBuilder withInitialDailyChangeRate(int initialRate) {
             this.initialRate = initialRate;
             return this;
         }
 
-        public Dynamic withRateBelowExpirationDays(int rate, int expirationDays) {
-            steps.setRateBelowExpirationDays(rate, expirationDays);
+        /**
+         * Defines a timeline-based quality update rate for items with fewer expiration days than the specified threshold.
+         * <p>
+         * When the item's remaining expiration days are less than {@code expirationDays}, the specified {@code rate} will apply.
+         * If multiple steps are defined, the earliest matching step (lowest threshold) is used.
+         * </p>
+         *
+         * @param rate            the quality change rate to apply
+         * @param expirationDays  the threshold expiration day (exclusive upper bound)
+         * @return this builder instance for method chaining
+         */
+        public DynamicBuilder withRateBelowExpirationDays(int rate, int expirationDays) {
+            timeline.setRateBelowExpirationDays(rate, expirationDays);
             return this;
         }
 
-        public Dynamic withQualityAfterExpiration(int quality) {
+        /**
+         * Specifies a fixed quality value to be applied after the item has expired.
+         * <p>
+         * If set, this value overrides any rate-based updates once the item is expired.
+         * </p>
+         *
+         * @param quality the static quality value to assign after expiration
+         * @return this builder instance for method chaining
+         */
+        public DynamicBuilder withQualityAfterExpiration(int quality) {
             qualityAfterExpiration = quality;
             return this;
         }
 
+        @Override
         public VendorItemQualityUpdatePolicy build(VendorItemQualityUpdateStrategyFactory factory) {
-            DynamicQualityUpdateStrategyParameters parameters = new DynamicQualityUpdateStrategyParameters(initialRate, steps, qualityAfterExpiration);
-            VendorItemQualityUpdateStrategy<DynamicQualityUpdateStrategyParameters> strategy = factory.GetDynamicStrategy();
+            assert factory != null;
+            DynamicQualityUpdateStrategyParameters parameters = new DynamicQualityUpdateStrategyParameters(initialRate, timeline, qualityAfterExpiration);
+            DynamicQualityUpdateStrategy strategy = factory.GetDynamicStrategy();
             return new StrategyBasedVendorItemQualityUpdatePolicy<>(strategy, parameters);
         }
     }
