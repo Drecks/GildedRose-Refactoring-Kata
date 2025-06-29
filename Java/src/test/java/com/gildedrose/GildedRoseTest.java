@@ -15,11 +15,14 @@ class GildedRoseTest {
         "0, 10, 8, -1",    // expired item: degrades twice
     })
     void updateQuality_when_normalItem_then_quality_degrades_over_time(int sellIn, int qualityBefore, int expectedQuality, int expectedSellIn) {
+        //ARRANGE
         Item[] items = new Item[]{new Item("Normal Item", sellIn, qualityBefore)};
-        GildedRose app = new GildedRose(items);
+        GildedRose systemUnderTest = new GildedRose(items);
 
-        app.updateQuality();
+        //ACT
+        systemUnderTest.updateQuality();
 
+        //ASSERT
         assertEquals(expectedSellIn, items[0].sellIn);
         assertEquals(expectedQuality, items[0].quality);
     }
@@ -34,11 +37,14 @@ class GildedRoseTest {
         "-1, 50, 50, -2"    // quality capped at 50 when item is expired
     })
     void updateQuality_when_agedBrie_then_quality_increases_over_time(int sellIn, int qualityBefore, int expectedQuality, int expectedSellIn) {
+        //ARRANGE
         Item[] items = new Item[]{new Item(ItemConstants.AGED_BRIE, sellIn, qualityBefore)};
-        GildedRose app = new GildedRose(items);
+        GildedRose systemUnderTest = new GildedRose(items);
 
-        app.updateQuality();
+        //ACT
+        systemUnderTest.updateQuality();
 
+        //ASSERT
         assertEquals(expectedSellIn, items[0].sellIn);
         assertEquals(expectedQuality, items[0].quality);
     }
@@ -51,11 +57,14 @@ class GildedRoseTest {
         "-1, 80, 80, -1"    // even expired
     })
     void updateQuality_when_sulfuras_then_quality_and_sellIn_does_not_change(int sellIn, int qualityBefore, int expectedQuality, int expectedSellIn) {
+        //ARRANGE
         Item[] items = new Item[]{new Item(ItemConstants.SULFURAS, sellIn, qualityBefore)};
-        GildedRose app = new GildedRose(items);
+        GildedRose systemUnderTest = new GildedRose(items);
 
-        app.updateQuality();
+        //ACT
+        systemUnderTest.updateQuality();
 
+        //ASSERT
         assertEquals(expectedSellIn, items[0].sellIn);
         assertEquals(expectedQuality, items[0].quality);
     }
@@ -72,11 +81,14 @@ class GildedRoseTest {
         "5, 50, 50, 4"      //quality doesn't increase higher than 50
     })
     void updateQuality_when_backstagePasses_then_quality_change_rate_increases_over_time(int sellIn, int qualityBefore, int expectedQuality, int expectedSellIn) {
+        //ARRANGE
         Item[] items = new Item[]{new Item(ItemConstants.BACKSTAGE_PASS, sellIn, qualityBefore)};
-        GildedRose app = new GildedRose(items);
+        GildedRose systemUnderTest = new GildedRose(items);
 
-        app.updateQuality();
+        //ACT
+        systemUnderTest.updateQuality();
 
+        //ASSERT
         assertEquals(expectedSellIn, items[0].sellIn);
         assertEquals(expectedQuality, items[0].quality);
     }

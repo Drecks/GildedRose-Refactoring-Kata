@@ -59,7 +59,7 @@ class GildedRose {
         if (item.name.equalsIgnoreCase(ItemConstants.SULFURAS)) {
             return VendorItemRarity.Legendary;
         }
-        return VendorItemRarity.Normal;
+        return VendorItemRarity.Common;
     }
 
     private static VendorItemKind mapItemToKind(Item item) {
