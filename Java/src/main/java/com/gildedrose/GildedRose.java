@@ -31,13 +31,17 @@ class GildedRose {
             .withRateBelowExpirationDays(2, 10)
             .withRateBelowExpirationDays(3, 5)
             .withQualityAfterExpiration(0);
+        VendorItemQualityUpdatePolicyBuilder conjuredItemPolicy = VendorItemQualityUpdatePolicyBuilder
+            .linearPolicy()
+            .withDailyChangeRate(-2)
+            .withDailyChangeRateAfterExpiration(-4);
         VendorItemQualityUpdateStrategyFactory factory = new VendorItemQualityUpdateStrategyFactory();
-
         qualityUpdatePolicy = VendorInventoryQualityUpdatePolicy.builder(factory)
             .withDefaultPolicy(defaultPolicy)
             .withPolicy(VendorItemRarity.Legendary, VendorItemQualityUpdatePolicyBuilder.noUpdate())
             .withPolicy(VendorItemKind.AgedFood, agedFoodPolicy)
             .withPolicy(VendorItemKind.EventPass, eventPassPolicy)
+            .withPolicy(VendorItemKind.Conjured, conjuredItemPolicy)
             .build();
     }
 
@@ -70,6 +74,8 @@ class GildedRose {
                 return VendorItemKind.AgedFood;
             case ItemConstants.BACKSTAGE_PASS:
                 return VendorItemKind.EventPass;
+            case ItemConstants.CONJURED_MANA_CAKE:
+                return  VendorItemKind.Conjured;
             default:
                 return VendorItemKind.Default;
         }

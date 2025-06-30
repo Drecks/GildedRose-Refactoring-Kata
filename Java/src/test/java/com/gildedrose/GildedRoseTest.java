@@ -92,4 +92,24 @@ class GildedRoseTest {
         assertEquals(expectedSellIn, items[0].sellIn);
         assertEquals(expectedQuality, items[0].quality);
     }
+
+    @ParameterizedTest
+    @CsvSource({
+        // sellIn, qualityBefore, qualityAfter, sellInAfter
+        "10, 20, 18, 9",   // normal degradation
+        "5, 0, 0, 4",      // quality floor
+        "0, 10, 6, -1",    // expired item: degrades twice
+    })
+    void updateQuality_when_conjuredItem_then_quality_degrades_twice_as_fast(int sellIn, int qualityBefore, int expectedQuality, int expectedSellIn) {
+        //ARRANGE
+        Item[] items = new Item[]{new Item("Conjured Mana Cake", sellIn, qualityBefore)};
+        GildedRose systemUnderTest = new GildedRose(items);
+
+        //ACT
+        systemUnderTest.updateQuality();
+
+        //ASSERT
+        assertEquals(expectedSellIn, items[0].sellIn);
+        assertEquals(expectedQuality, items[0].quality);
+    }
 }
