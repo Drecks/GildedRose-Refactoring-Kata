@@ -1,62 +1,83 @@
 package com.gildedrose;
 
+import com.gildedrose.domain.vendor.inventory.VendorInventory;
+import com.gildedrose.domain.vendor.inventory.quality.policies.VendorInventoryQualityUpdatePolicy;
+import com.gildedrose.domain.vendor.item.VendorItem;
+import com.gildedrose.domain.vendor.item.VendorItemKind;
+import com.gildedrose.domain.vendor.item.VendorItemRarity;
+import com.gildedrose.domain.vendor.item.quality.policies.builders.VendorItemQualityUpdatePolicyBuilder;
+import com.gildedrose.domain.vendor.item.quality.policies.factories.VendorItemQualityUpdateStrategyFactory;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 class GildedRose {
-    Item[] items;
+    VendorInventory inventory;
+    VendorInventoryQualityUpdatePolicy qualityUpdatePolicy;
 
     public GildedRose(Item[] items) {
-        this.items = items;
+        inventory = new VendorInventory(Arrays.stream(items).map(GildedRose::mapToVendorItem).collect(Collectors.toList()));
+        VendorItemQualityUpdatePolicyBuilder defaultPolicy = VendorItemQualityUpdatePolicyBuilder
+            .linearPolicy()
+            .withDailyChangeRate(-1)
+            .withDailyChangeRateAfterExpiration(-2);
+        VendorItemQualityUpdatePolicyBuilder agedFoodPolicy = VendorItemQualityUpdatePolicyBuilder
+            .linearPolicy()
+            .withDailyChangeRate(1)
+            .withDailyChangeRateAfterExpiration(2);
+        VendorItemQualityUpdatePolicyBuilder eventPassPolicy = VendorItemQualityUpdatePolicyBuilder
+            .dynamicPolicy()
+            .withInitialDailyChangeRate(1)
+            .withRateBelowExpirationDays(2, 10)
+            .withRateBelowExpirationDays(3, 5)
+            .withQualityAfterExpiration(0);
+        VendorItemQualityUpdatePolicyBuilder conjuredItemPolicy = VendorItemQualityUpdatePolicyBuilder
+            .linearPolicy()
+            .withDailyChangeRate(-2)
+            .withDailyChangeRateAfterExpiration(-4);
+        VendorItemQualityUpdateStrategyFactory factory = new VendorItemQualityUpdateStrategyFactory();
+        qualityUpdatePolicy = VendorInventoryQualityUpdatePolicy.builder(factory)
+            .withDefaultPolicy(defaultPolicy)
+            .withPolicy(VendorItemRarity.Legendary, VendorItemQualityUpdatePolicyBuilder.noUpdate())
+            .withPolicy(VendorItemKind.AgedFood, agedFoodPolicy)
+            .withPolicy(VendorItemKind.EventPass, eventPassPolicy)
+            .withPolicy(VendorItemKind.Conjured, conjuredItemPolicy)
+            .build();
     }
 
     public void updateQuality() {
-        for (int i = 0; i < items.length; i++) {
-            if (!items[i].name.equals("Aged Brie")
-                    && !items[i].name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-                if (items[i].quality > 0) {
-                    if (!items[i].name.equals("Sulfuras, Hand of Ragnaros")) {
-                        items[i].quality = items[i].quality - 1;
-                    }
-                }
-            } else {
-                if (items[i].quality < 50) {
-                    items[i].quality = items[i].quality + 1;
+        inventory.updateDaily(qualityUpdatePolicy);
+    }
 
-                    if (items[i].name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-                        if (items[i].sellIn < 11) {
-                            if (items[i].quality < 50) {
-                                items[i].quality = items[i].quality + 1;
-                            }
-                        }
+    private static VendorItem mapToVendorItem(Item item) {
+        VendorItemRarity rarity = mapItemToRarity(item);
+        VendorItemKind kind = mapItemToKind(item);
+        if (rarity == VendorItemRarity.Legendary) {
+            return new VendorItem(item, rarity, kind, ItemConstants.LEGENDARY_QUALITY, ItemConstants.LEGENDARY_QUALITY);
+        } else {
+            return new VendorItem(item, rarity, kind, ItemConstants.MIN_NORMAL_QUALITY, ItemConstants.MAX_NORMAL_QUALITY);
+        }
+    }
 
-                        if (items[i].sellIn < 6) {
-                            if (items[i].quality < 50) {
-                                items[i].quality = items[i].quality + 1;
-                            }
-                        }
-                    }
-                }
-            }
+    private static VendorItemRarity mapItemToRarity(Item item) {
+        if (item.name.equalsIgnoreCase(ItemConstants.SULFURAS)) {
+            return VendorItemRarity.Legendary;
+        }
+        return VendorItemRarity.Common;
+    }
 
-            if (!items[i].name.equals("Sulfuras, Hand of Ragnaros")) {
-                items[i].sellIn = items[i].sellIn - 1;
-            }
-
-            if (items[i].sellIn < 0) {
-                if (!items[i].name.equals("Aged Brie")) {
-                    if (!items[i].name.equals("Backstage passes to a TAFKAL80ETC concert")) {
-                        if (items[i].quality > 0) {
-                            if (!items[i].name.equals("Sulfuras, Hand of Ragnaros")) {
-                                items[i].quality = items[i].quality - 1;
-                            }
-                        }
-                    } else {
-                        items[i].quality = items[i].quality - items[i].quality;
-                    }
-                } else {
-                    if (items[i].quality < 50) {
-                        items[i].quality = items[i].quality + 1;
-                    }
-                }
-            }
+    private static VendorItemKind mapItemToKind(Item item) {
+        switch (item.name) {
+            case ItemConstants.SULFURAS:
+                return VendorItemKind.Sulfuras;
+            case ItemConstants.AGED_BRIE:
+                return VendorItemKind.AgedFood;
+            case ItemConstants.BACKSTAGE_PASS:
+                return VendorItemKind.EventPass;
+            case ItemConstants.CONJURED_MANA_CAKE:
+                return  VendorItemKind.Conjured;
+            default:
+                return VendorItemKind.Default;
         }
     }
 }
